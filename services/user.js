@@ -17,8 +17,13 @@ export default class UserService {
     // MySQL
     let query = `INSERT INTO \`easy-aiops\`.\`users\` (\`username\`, \`email\`) VALUES ('${username}', '${email}')`;
     // console.log('MySQL query: ' + query);
-    
-    // const [results] = await mySqlConnection.execute(query);
+
+    try {
+      
+      const [results] = await mySqlConnection.execute(query);
+    } catch (e) {
+      console.error('Unable to create user in MySQL. ', e);
+    }
     // console.log(results);
     return user;
   }
@@ -27,6 +32,11 @@ export default class UserService {
     await User.find({ $limit: 1000});
     let query = `select * from \`easy-aiops\`.\`users\` limit 1000`;
     // await mySqlConnection.execute(query);
+    try {
+      await mySqlConnection.execute(query);
+    } catch (e) {
+      console.error('Unable to create user in MySQL. ', e);
+    }
   }
 }
 
