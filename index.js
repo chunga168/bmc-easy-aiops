@@ -36,17 +36,21 @@ then(() => {
 
 const mySqlConnection = '';
 
-// const mySqlConnection = await mysql.createConnection({
-//   host: 'host.docker.internal',
-//   user: 'root',
-//   password: 'qwer1234',
-//   database: 'easy-aiops'
-// });
+const mySqlConnection = await mysql.createConnection({
+   host: mongoDbServer,
+   user: 'root',
+   password: 'qwer1234',
+   database: 'easy-aiops'
+ });
 
-// mySqlConnection.execute('SELECT COUNT(*) FROM \`easy-aiops\`.\`users\`').then(results => {
-//   // console.log(results);
-//   console.log('MySql connection successful');  
-// });
+try {
+   mySqlConnection.execute('SELECT COUNT(*) FROM \`easy-aiops\`.\`users\`').then(results => {
+     // console.log(results);
+     console.log('MySql connection successful');  
+   });
+} catch (e) {
+  console.error('Error connecting to MySQL: ', e);
+}
 
 // APIs
 app.get('/createUser', (req, res) => {
