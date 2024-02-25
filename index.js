@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-// import mysql from 'mysql2/promise';
+import mysql from 'mysql2/promise';
 
 import UserService from './services/user.js';
 const mongoDbServer = process.env.easyAIOpsDBUrl || 'host.docker.internal';
@@ -34,16 +34,15 @@ then(() => {
   console.error('Error connecting to MongoDB: ', e);
 });
 
-const mySqlConnection = '';
-
-const mySqlConnection = await mysql.createConnection({
-   host: mongoDbServer,
-   user: 'root',
-   password: 'qwer1234',
-   database: 'easy-aiops'
- });
+let mySqlConnection;
 
 try {
+  mySqlConnection = await mysql.createConnection({
+     host: mongoDbServer,
+     user: 'root',
+     password: 'qwer1234',
+     database: 'easy-aiops'
+   });
    mySqlConnection.execute('SELECT COUNT(*) FROM \`easy-aiops\`.\`users\`').then(results => {
      // console.log(results);
      console.log('MySql connection successful');  
@@ -65,12 +64,16 @@ app.get('/generateUsers', (req, res) => {
 
 app.get('/readUsers', (req, res) => {
   foreverRead = true;
+  service.getFullUsers(mySqlConnection).then((result) => {    
+    res.send(`Started reading users: ${result}`);
+  });
   foreverReadFunction();
-  res.send('Started reading users');
 })
 
 app.get('/loopStatus', (req, res) => {
-  res.send(`Is Looping? ${foreverLoop}<br>${count} users were created.<br>Forever read loop? ${foreverRead}`);
+  service.getFullUsers(mySqlConnection).then((result) => {
+    res.send(`Is Looping? ${foreverLoop}<br>${count} users were created.<br>Forever read loop? ${foreverRead}.<br>${result}`);
+  });
 });
 
 app.get('/stopLoop', (req, res) => {

@@ -29,14 +29,19 @@ export default class UserService {
   }
 
   async getFullUsers(mySqlConnection) {
-    await User.find({ $limit: 1000});
-    let query = `select * from \`easy-aiops\`.\`users\` limit 1000`;
-    // await mySqlConnection.execute(query);
+    let result = '';
+    let users = await User.find({ $limit: 1000});
+    console.log('users: ' + users.length);
+    result += `MongoDB: ${users.length}. `;
+    
+    let query = `select * from \`easy-aiops\`.\`users\` limit 1000`;    
     try {
-      await mySqlConnection.execute(query);
+      let [results ] = await mySqlConnection.execute(query);
+      result += `MySQL: ${results.length}. `;
     } catch (e) {
       console.error('Unable to create user in MySQL. ', e);
     }
+    return result;
   }
 }
 
