@@ -1,6 +1,9 @@
-import mysql from 'mysql2/promise';
-import User from '../models/user.js';
-import winston from 'winston';
+// import mysql from 'mysql2/promise';
+// import User from '../models/user.js';
+// import winston from 'winston';
+
+const User = require('../models/user.js');
+const winston = require('winston');
 
 const { combine, timestamp, label, printf  } = winston.format;
 const myFormat = printf(({ level, message, label, timestamp }) => {
@@ -22,7 +25,9 @@ const logger = winston.createLogger({
 });
 
 
-export default class UserService {
+
+// export default class UserService {
+class UserService {
   constructor() {
     this.model = User;    
   }
@@ -36,12 +41,13 @@ export default class UserService {
     user = await user.save();
 
     // MySQL
-    let query = `INSERT INTO \`easy-aiops\`.\`users\` (\`username\`, \`email\`) VALUES ('${username}', '${email}')`;
+    let query = `INSERT INTO \`easy_aiops\`.\`users\` (\`username\`, \`email\`) VALUES ('${username}', '${email}')`;
     // console.log('MySQL query: ' + query);
 
     try {
-      
-      const [results] = await mySqlConnection.execute(query);
+      if (mySqlConnection) {
+        const [results] = await mySqlConnection.execute(query);
+      }
     } catch (e) {
       console.error('Unable to create user in MySQL. ', e);
       logger.error('Unable to create user in MySQL. ', e);
@@ -57,10 +63,12 @@ export default class UserService {
     // console.log('users: ' + users.length);
     result += `MongoDB: ${users.length}. `;
     
-    let query = `select * from \`easy-aiops\`.\`users\``;    
+    let query = `select * from \`easy_aiops\`.\`users\``;    
     try {
-      let [results ] = await mySqlConnection.execute(query);
-      result += `MySQL: ${results.length}. `;
+      if (mySqlConnection) {
+        let [results ] = await mySqlConnection.execute(query);
+        result += `MySQL: ${results.length}. `;
+      }
     } catch (e) {
       console.error('Unable to create user in MySQL. ', e);
       logger.error('Unable to create user in MySQL. ', e);
@@ -69,6 +77,8 @@ export default class UserService {
     return result;
   }
 }
+
+module.exports = UserService;
 
 
 function makeid(length) {

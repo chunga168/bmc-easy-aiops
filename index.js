@@ -1,9 +1,19 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import mysql from 'mysql2/promise';
-import winston from 'winston';
+// import 'stackify-node-apm';
 
-import UserService from './services/user.js';
+// import express from 'express';
+// import mongoose from 'mongoose';
+// import mysql from 'mysql2/promise';
+// import winston from 'winston';
+
+// import UserService from './services/user.js';
+
+require ('stackify-node-apm');
+const express = require('express');
+const mongoose = require('mongoose');
+const mysql = require('mysql2/promise');
+const winston = require('winston');
+const UserService = require('./services/user.js');
+
 const mongoDbServer = process.env.easyAIOpsDBUrl || 'host.docker.internal';
 
 const DB_URL = `mongodb://admin:qwer1234@${mongoDbServer}:27017/easy-aiops`;
@@ -18,6 +28,9 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
   return `${timestamp} [${label}] ${level.toUpperCase()}: ${message}`;
 });
 
+
+console.log(require.main);
+console.log('--- require.main ---');
 const logger = winston.createLogger({
   level: 'info',
   format: combine(
@@ -68,23 +81,9 @@ then(() => {
 });
 
 let mySqlConnection;
+initMySQL().then(s => mySqlConnection = s );
 
-try {
-  mySqlConnection = await mysql.createConnection({
-     host: mongoDbServer,
-     user: 'root',
-     password: 'qwer1234',
-     database: 'easy-aiops'
-   });
-   mySqlConnection.execute('SELECT COUNT(*) FROM \`easy-aiops\`.\`users\`').then(results => {
-     // console.log(results);
-     console.log('MySql connection successful');
-     logger.info('MySql connection successful');
-   });
-} catch (e) {
-  console.error('Error connecting to MySQL: ', e);
-  logger.error('Error connecting to MySQL: ', e);
-}
+
 
 // APIs
 app.get('/createUser', (req, res) => {
@@ -136,4 +135,25 @@ const foreverReadFunction = async () => {
 function logRequest(req, res, next) {
   logger.info(req.method + ' ' + req.url);
   next();
+}
+
+async function initMySQL() {
+  try {
+    let mySqlConnection = await mysql.createConnection({
+       host: mongoDbServer,
+       user: 'root',
+       password: 'qwer1234',
+       database: 'easy_aiops'
+     });
+     mySqlConnection.execute('SELECT COUNT(*) FROM \`easy_aiops\`.\`users\`').then(results => {
+       // console.log(results);
+       console.log('MySql connection successful');
+       logger.info('MySql connection successful');
+     });
+    return mySqlConnection;
+  } catch (e) {
+    console.error('Error connecting to MySQL: ', e);
+    logger.error('Error connecting to MySQL: ', e);
+    return null;
+  }
 }
